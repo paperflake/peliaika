@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Vaihtokoppi — vaihtojen hallinta</title>
+<meta name="description" content="Yksinkertainen työkalu junioreiden jalkapallovalmentajalle pelin vaihtojen hallintaan.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="chrome-header">
+  <div class="chrome-header__top">
+    <span class="chrome-header__mark">⚽</span>
+    <input id="tournamentNameInput" class="chrome-header__name" type="text" value="Turnaus" aria-label="Turnauksen nimi">
+  </div>
+  <nav class="tabbar" role="tablist" aria-label="Näkymät">
+    <button class="tabbar__tab" data-tab="peli" role="tab" aria-selected="true">Peli</button>
+    <button class="tabbar__tab" data-tab="ottelut" role="tab" aria-selected="false">Ottelut</button>
+    <button class="tabbar__tab" data-tab="joukkue" role="tab" aria-selected="false">Joukkue</button>
+    <button class="tabbar__tab" data-tab="tilastot" role="tab" aria-selected="false">Tilastot</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ===================== PELI ===================== -->
+  <section id="tab-peli" class="tab-panel" data-panel="peli">
+
+    <div id="peliEmpty" class="empty-state" hidden>
+      <p class="empty-state__title">Ei aktiivista ottelua</p>
+      <p class="empty-state__body">Luo ensin ottelu Ottelut-välilehdellä ja valitse se aktiiviseksi.</p>
+      <button class="btn btn--accent" data-action="go-ottelut">Ottelut-välilehdelle</button>
+    </div>
+
+    <div id="peliContent" hidden>
+
+      <div class="matchpicker">
+        <label for="activeMatchSelect">Ottelu</label>
+        <select id="activeMatchSelect"></select>
+      </div>
+
+      <div class="timerbar" id="timerbar">
+        <div class="timerbar__periods" id="timerbarPeriods"></div>
+        <div class="timerbar__clock">
+          <div class="timerbar__elapsed" id="timerElapsed">00:00</div>
+          <div class="timerbar__of" id="timerOf">/ 20:00</div>
+        </div>
+        <div class="timerbar__total">
+          <span>Yhteensä <strong id="timerTotal">00:00</strong> / <span id="timerTotalOf">80:00</span></span>
+        </div>
+        <div class="timerbar__controls">
+          <button class="btn btn--big btn--accent" id="btnStartPause">Aloita</button>
+          <button class="btn btn--big btn--ghost" id="btnNextPeriod" hidden>Seuraava jakso</button>
+          <button class="btn btn--big btn--ghost" id="btnFinishMatch">Päätä ottelu</button>
+        </div>
+      </div>
+
+      <div class="subpanel" id="subpanel">
+        <div class="subpanel__head">
+          <h2>Vaihtoehdotus</h2>
+          <span class="subpanel__badge" id="subDueBadge" hidden>Vaihto suositellaan nyt</span>
+        </div>
+        <div class="subpanel__columns">
+          <div class="subpanel__col">
+            <p class="subpanel__label">Pois kentältä</p>
+            <div class="chiplist" id="offChips"></div>
+          </div>
+          <div class="subpanel__col">
+            <p class="subpanel__label">Kentälle</p>
+            <div class="chiplist" id="onChips"></div>
+          </div>
+        </div>
+        <p class="subpanel__hint" id="subHint"></p>
+        <button class="btn btn--big btn--accent btn--full" id="btnDoSub">Vaihda nyt</button>
+      </div>
+
+      <div class="gkpanel">
+        <label for="gkSelect">Maalivahti</label>
+        <select id="gkSelect"></select>
+      </div>
+
+      <ul class="roster" id="rosterLive"></ul>
+
+      <div class="sublog" id="sublog"></div>
+    </div>
+  </section>
+
+  <!-- ===================== OTTELUT ===================== -->
+  <section id="tab-ottelut" class="tab-panel" data-panel="ottelut" hidden>
+    <div class="panel-head">
+      <h1>Ottelut</h1>
+      <button class="btn btn--accent" id="btnNewMatch">+ Uusi ottelu</button>
+    </div>
+    <ul class="matchlist" id="matchList"></ul>
+  </section>
+
+  <!-- ===================== JOUKKUE ===================== -->
+  <section id="tab-joukkue" class="tab-panel" data-panel="joukkue" hidden>
+    <div class="panel-head">
+      <h1>Joukkue</h1>
+    </div>
+
+    <form class="addplayer" id="addPlayerForm">
+      <input id="newPlayerNumber" type="number" min="0" max="999" placeholder="#" aria-label="Numero">
+      <input id="newPlayerName" type="text" placeholder="Pelaajan nimi" aria-label="Nimi" required>
+      <button class="btn btn--accent" type="submit">Lisää</button>
+    </form>
+
+    <ul class="playerlist" id="playerList"></ul>
+
+    <div class="panel-head panel-head--sub">
+      <h2>Vaihtoasetukset</h2>
+    </div>
+    <div class="settingsform">
+      <label>
+        Kentällä pelaajia (pl. maalivahti)
+        <input type="number" id="setOutfieldSlots" min="1" max="10">
+      </label>
+      <label>
+        Vaihdossa kerralla
+        <input type="number" id="setSubGroupSize" min="1" max="10">
+      </label>
+      <label>
+        Sallittu poikkeama (min)
+        <input type="number" id="setTolerance" min="0" max="60" step="0.5">
+      </label>
+    </div>
+
+    <div class="panel-head panel-head--sub">
+      <h2>Varmuuskopio</h2>
+    </div>
+    <div class="backup-row">
+      <button class="btn btn--ghost" id="btnExport">Vie tiedosto (.json)</button>
+      <button class="btn btn--ghost" id="btnImport">Tuo tiedosto</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button class="btn btn--danger" id="btnReset">Nollaa kaikki tiedot</button>
+    </div>
+  </section>
+
+  <!-- ===================== TILASTOT ===================== -->
+  <section id="tab-tilastot" class="tab-panel" data-panel="tilastot" hidden>
+    <div class="panel-head">
+      <h1>Tilastot</h1>
+    </div>
+    <div id="statsContent"></div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalRoot"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
