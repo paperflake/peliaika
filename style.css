@@ -415,6 +415,7 @@ main{ max-width: 640px; margin: 0 auto; padding: 14px; }
   display:flex; align-items:flex-end; justify-content:center;
   z-index: 50;
 }
+.modal-backdrop[hidden]{ display: none; }
 @media (min-width: 560px){
   .modal-backdrop{ align-items:center; }
 }
